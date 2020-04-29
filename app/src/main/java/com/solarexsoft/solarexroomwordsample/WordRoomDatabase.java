@@ -15,7 +15,7 @@ import java.util.concurrent.Executors;
  * Created by Solarex on 2020/4/29/5:49 PM
  * Desc:
  */
-@Database(entities = {Word.class}, version = 1, exportSchema = false)
+@Database(entities = {Word.class}, version = 1, exportSchema = true)
 public abstract class WordRoomDatabase extends RoomDatabase {
     public abstract WordDao wordDao();
 

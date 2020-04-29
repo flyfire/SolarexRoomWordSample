@@ -1,5 +1,6 @@
 package com.solarexsoft.solarexroomwordsample
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.room.*
 
@@ -21,4 +22,33 @@ interface WordDao {
 
     @Query("DELETE FROM word_table")
     suspend fun deleteAll()
+}
+
+@Database(entities = arrayOf(Word::class), version = 1, exportSchema = false)
+public abstract class WordRoomDatabase: RoomDatabase() {
+    abstract fun wordDao(): WordDao
+    companion object {
+        @Volatile
+        private var INSTANCE: WordRoomDatabase? = null
+
+        fun getDatabase(context: Context): WordRoomDatabase {
+            val tempInstance = INSTANCE
+            if (tempInstance != null) {
+                return tempInstance
+            }
+            synchronized(this) {
+                val tempInstanceDoubleCheck = INSTANCE
+                if (tempInstanceDoubleCheck != null) {
+                    return tempInstanceDoubleCheck
+                }
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    WordRoomDatabase::class.java,
+                    "word_database"
+                ).build()
+                INSTANCE = instance
+                return instance
+            }
+        }
+    }
 }

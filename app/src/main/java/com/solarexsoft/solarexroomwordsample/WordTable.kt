@@ -3,6 +3,9 @@ package com.solarexsoft.solarexroomwordsample
 import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import androidx.sqlite.db.SupportSQLiteDatabase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * Created by Solarex on 2020/4/29/3:53 PM
@@ -31,7 +34,7 @@ public abstract class WordRoomDatabase: RoomDatabase() {
         @Volatile
         private var INSTANCE: WordRoomDatabase? = null
 
-        fun getDatabase(context: Context): WordRoomDatabase {
+        fun getDatabase(context: Context, scope: CoroutineScope): WordRoomDatabase {
             val tempInstance = INSTANCE
             if (tempInstance != null) {
                 return tempInstance
@@ -45,10 +48,31 @@ public abstract class WordRoomDatabase: RoomDatabase() {
                     context.applicationContext,
                     WordRoomDatabase::class.java,
                     "word_database"
-                ).build()
+                ).addCallback(WordDatabaseCallback(scope)).build()
                 INSTANCE = instance
                 return instance
             }
         }
     }
+
+    private class WordDatabaseCallback(private val scope: CoroutineScope): RoomDatabase.Callback() {
+        override fun onOpen(db: SupportSQLiteDatabase) {
+            super.onOpen(db)
+            INSTANCE?.let {
+                wordRoomDatabase ->
+                scope.launch {
+                    populateDatabase(wordRoomDatabase.wordDao())
+                }
+            }
+        }
+
+        suspend fun populateDatabase(wordDao: WordDao) {
+            wordDao.deleteAll()
+            var word = Word("hello")
+            wordDao.insert(word)
+            word = Word("world")
+            wordDao.insert(word)
+        }
+    }
 }
+

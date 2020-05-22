@@ -13,7 +13,11 @@ import kotlinx.coroutines.launch
  */
 
 @Entity(tableName = "word_table")
-class Word(@PrimaryKey @ColumnInfo(name = "word") val word: String)
+data class Word(
+    @PrimaryKey @ColumnInfo(name = "word") var word: String,
+    @Transient val meaning: String,
+    @Ignore var englishPronounce: String
+)
 
 @Dao
 interface WordDao {
@@ -27,7 +31,7 @@ interface WordDao {
     suspend fun deleteAll()
 }
 
-@Database(entities = arrayOf(Word::class), version = 1, exportSchema = false)
+@Database(entities = arrayOf(Word::class), version = 1, exportSchema = true)
 public abstract class WordRoomDatabase: RoomDatabase() {
     abstract fun wordDao(): WordDao
     companion object {
@@ -68,9 +72,9 @@ public abstract class WordRoomDatabase: RoomDatabase() {
 
         suspend fun populateDatabase(wordDao: WordDao) {
             wordDao.deleteAll()
-            var word = Word("hello")
+            var word = Word("hello", "meaning0", "pronounce0")
             wordDao.insert(word)
-            word = Word("world")
+            word = Word("world", "meaning1", "pronounce1")
             wordDao.insert(word)
         }
     }

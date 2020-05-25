@@ -3,6 +3,7 @@ package com.solarexsoft.solarexroomwordsample
 import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.room.*
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -14,8 +15,8 @@ import kotlinx.coroutines.launch
 
 @Entity(tableName = "word_table")
 data class Word(
-    @PrimaryKey @ColumnInfo(name = "word") var word: String,
-    @Transient val meaning: String,
+    @PrimaryKey @ColumnInfo(name = "word") var word: String = "",
+    @Transient @ColumnInfo(name = "solarex_test_meaning") var meaning: String = "",
     @Ignore val pronounce: String
 ) {
     constructor() :this("", "", ""){}
@@ -33,7 +34,7 @@ interface WordDao {
     suspend fun deleteAll()
 }
 
-@Database(entities = arrayOf(Word::class), version = 1, exportSchema = true)
+@Database(entities = arrayOf(Word::class), version = 2, exportSchema = true)
 public abstract class WordRoomDatabase: RoomDatabase() {
     abstract fun wordDao(): WordDao
     companion object {
@@ -54,7 +55,14 @@ public abstract class WordRoomDatabase: RoomDatabase() {
                     context.applicationContext,
                     WordRoomDatabase::class.java,
                     "word_database"
-                ).addCallback(WordDatabaseCallback(scope)).build()
+                ).addCallback(WordDatabaseCallback(scope))
+                    .addMigrations(object : Migration(1, 2){
+                        override fun migrate(database: SupportSQLiteDatabase) {
+                            database.execSQL("alter table word_table add column solarex_test_meaning text not null default ''")
+                        }
+
+                    })
+                    .build()
                 INSTANCE = instance
                 return instance
             }

@@ -16,8 +16,10 @@ import kotlinx.coroutines.launch
 data class Word(
     @PrimaryKey @ColumnInfo(name = "word") var word: String,
     @Transient val meaning: String,
-    @Ignore var englishPronounce: String
-)
+    @Ignore val pronounce: String
+) {
+    constructor() :this("", "", ""){}
+}
 
 @Dao
 interface WordDao {

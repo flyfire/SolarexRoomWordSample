@@ -13,6 +13,8 @@ import kotlinx.coroutines.launch
  * Desc:
  */
 
+// https://developer.android.com/reference/android/arch/persistence/room/Entity
+// If a field is transient, it is automatically ignored unless it is annotated with ColumnInfo, Embedded or Relation.
 @Entity(tableName = "word_table")
 data class Word(
     @PrimaryKey @ColumnInfo(name = "word") var word: String = "",
